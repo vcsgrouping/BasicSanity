@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+    <query name="HQL_FromVacation">
+        <![CDATA[
+        from Vacation
+        ]]>
+    </query>
+
+    <query name="HQL_FromVacation__count">
+        <![CDATA[
+        select count(*) from Vacation
+        ]]>
+    </query>
+
+    <sql-query name="SV_EmpData">
+        <![CDATA[
+        select * from EMPLOYEE
+        ]]>
+    </sql-query>
+
+    <sql-query name="SV_EmpData__count">
+        <![CDATA[
+        select count(*) from (select * from EMPLOYEE) wmTempTable
+        ]]>
+    </sql-query>
+</hibernate-mapping>

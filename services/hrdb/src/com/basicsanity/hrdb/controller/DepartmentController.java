@@ -27,7 +27,7 @@ import com.wavemaker.runtime.data.expression.QueryFilter;
 import com.wavemaker.runtime.data.model.AggregationInfo;
 import com.wavemaker.runtime.file.manager.ExportedFileManager;
 import com.wavemaker.runtime.file.model.Downloadable;
-import com.wavemaker.runtime.security.xss.XssDisable;
+import com.wavemaker.tools.api.core.annotations.MapTo;
 import com.wavemaker.tools.api.core.annotations.WMAccessVisibility;
 import com.wavemaker.tools.api.core.models.AccessSpecifier;
 import com.wordnik.swagger.annotations.Api;
@@ -70,37 +70,49 @@ public class DepartmentController {
 	}
 
     @ApiOperation(value = "Returns the Department instance associated with the given id.")
-    @RequestMapping(value = "/{id:.+}", method = RequestMethod.GET)
+    @RequestMapping(value = "/{deptId:.+}", method = RequestMethod.GET)
     @WMAccessVisibility(value = AccessSpecifier.APP_ONLY)
-    public Department getDepartment(@PathVariable("id") Integer id) {
-        LOGGER.debug("Getting Department with id: {}" , id);
+    public Department getDepartment(@PathVariable("deptId") Integer deptId) {
+        LOGGER.debug("Getting Department with id: {}" , deptId);
 
-        Department foundDepartment = departmentService.getById(id);
+        Department foundDepartment = departmentService.getById(deptId);
         LOGGER.debug("Department details with id: {}" , foundDepartment);
 
         return foundDepartment;
     }
 
     @ApiOperation(value = "Updates the Department instance associated with the given id.")
-    @RequestMapping(value = "/{id:.+}", method = RequestMethod.PUT)
+    @RequestMapping(value = "/{deptId:.+}", method = RequestMethod.PUT)
     @WMAccessVisibility(value = AccessSpecifier.APP_ONLY)
-    public Department editDepartment(@PathVariable("id") Integer id, @RequestBody Department department) {
+    public Department editDepartment(@PathVariable("deptId") Integer deptId, @RequestBody Department department) {
         LOGGER.debug("Editing Department with id: {}" , department.getDeptId());
 
-        department.setDeptId(id);
+        department.setDeptId(deptId);
         department = departmentService.update(department);
         LOGGER.debug("Department details with id: {}" , department);
 
         return department;
     }
+    
+    @ApiOperation(value = "Partially updates the Department instance associated with the given id.")
+    @RequestMapping(value = "/{deptId:.+}", method = RequestMethod.PATCH)
+    @WMAccessVisibility(value = AccessSpecifier.APP_ONLY)
+    public Department patchDepartment(@PathVariable("deptId") Integer deptId, @RequestBody @MapTo(Department.class) Map<String, Object> departmentPatch) {
+        LOGGER.debug("Partially updating Department with id: {}" , deptId);
+
+        Department department = departmentService.partialUpdate(deptId, departmentPatch);
+        LOGGER.debug("Department details after partial update: {}" , department);
+
+        return department;
+    }
 
     @ApiOperation(value = "Deletes the Department instance associated with the given id.")
-    @RequestMapping(value = "/{id:.+}", method = RequestMethod.DELETE)
+    @RequestMapping(value = "/{deptId:.+}", method = RequestMethod.DELETE)
     @WMAccessVisibility(value = AccessSpecifier.APP_ONLY)
-    public boolean deleteDepartment(@PathVariable("id") Integer id) {
-        LOGGER.debug("Deleting Department with id: {}" , id);
+    public boolean deleteDepartment(@PathVariable("deptId") Integer deptId) {
+        LOGGER.debug("Deleting Department with id: {}" , deptId);
 
-        Department deletedDepartment = departmentService.delete(id);
+        Department deletedDepartment = departmentService.delete(deptId);
 
         return deletedDepartment != null;
     }
@@ -120,7 +132,6 @@ public class DepartmentController {
     @ApiOperation(value = "Returns the list of Department instances matching the search criteria.")
     @RequestMapping(value = "/search", method = RequestMethod.POST)
     @WMAccessVisibility(value = AccessSpecifier.APP_ONLY)
-    @XssDisable
     public Page<Department> searchDepartmentsByQueryFilters( Pageable pageable, @RequestBody QueryFilter[] queryFilters) {
         LOGGER.debug("Rendering Departments list by query filter:{}", (Object) queryFilters);
         return departmentService.findAll(queryFilters, pageable);
@@ -137,16 +148,14 @@ public class DepartmentController {
     @ApiOperation(value = "Returns the paginated list of Department instances matching the optional query (q) request param. This API should be used only if the query string is too big to fit in GET request with request param. The request has to made in application/x-www-form-urlencoded format.")
     @RequestMapping(value="/filter", method = RequestMethod.POST, consumes= "application/x-www-form-urlencoded")
     @WMAccessVisibility(value = AccessSpecifier.APP_ONLY)
-    @XssDisable
     public Page<Department> filterDepartments(@ApiParam("conditions to filter the results") @RequestParam(value = "q", required = false) String query, Pageable pageable) {
         LOGGER.debug("Rendering Departments list by filter", query);
         return departmentService.findAll(query, pageable);
     }
 
-    @ApiOperation(value = "Returns downloadable file for the data matching the optional query (q) request param. If query string is too big to fit in GET request's query param, use POST method with application/x-www-form-urlencoded format.")
-    @RequestMapping(value = "/export/{exportType}", method = {RequestMethod.GET,  RequestMethod.POST}, produces = "application/octet-stream")
+    @ApiOperation(value = "Returns downloadable file for the data matching the optional query (q) request param.")
+    @RequestMapping(value = "/export/{exportType}", method = RequestMethod.GET, produces = "application/octet-stream")
     @WMAccessVisibility(value = AccessSpecifier.APP_ONLY)
-    @XssDisable
     public Downloadable exportDepartments(@PathVariable("exportType") ExportType exportType, @ApiParam("conditions to filter the results") @RequestParam(value = "q", required = false) String query, Pageable pageable) {
          return departmentService.export(exportType, query, pageable);
     }
@@ -154,7 +163,6 @@ public class DepartmentController {
     @ApiOperation(value = "Returns a URL to download a file for the data matching the optional query (q) request param and the required fields provided in the Export Options.") 
     @RequestMapping(value = "/export", method = {RequestMethod.POST}, consumes = "application/json")
     @WMAccessVisibility(value = AccessSpecifier.APP_ONLY)
-    @XssDisable
     public StringWrapper exportDepartmentsAndGetURL(@RequestBody DataExportOptions exportOptions, Pageable pageable) {
         String exportedFileName = exportOptions.getFileName();
         if(exportedFileName == null || exportedFileName.isEmpty()) {
@@ -165,10 +173,9 @@ public class DepartmentController {
         return new StringWrapper(exportedUrl);
     }
 
-	@ApiOperation(value = "Returns the total count of Department instances matching the optional query (q) request param. If query string is too big to fit in GET request's query param, use POST method with application/x-www-form-urlencoded format.")
-	@RequestMapping(value = "/count", method = {RequestMethod.GET, RequestMethod.POST})
+	@ApiOperation(value = "Returns the total count of Department instances matching the optional query (q) request param.")
+	@RequestMapping(value = "/count", method = RequestMethod.GET)
     @WMAccessVisibility(value = AccessSpecifier.APP_ONLY)
-	@XssDisable
 	public Long countDepartments( @ApiParam("conditions to filter the results") @RequestParam(value = "q", required = false) String query) {
 		LOGGER.debug("counting Departments");
 		return departmentService.count(query);
@@ -177,19 +184,18 @@ public class DepartmentController {
     @ApiOperation(value = "Returns aggregated result with given aggregation info")
 	@RequestMapping(value = "/aggregations", method = RequestMethod.POST)
     @WMAccessVisibility(value = AccessSpecifier.APP_ONLY)
-	@XssDisable
 	public Page<Map<String, Object>> getDepartmentAggregatedValues(@RequestBody AggregationInfo aggregationInfo, Pageable pageable) {
         LOGGER.debug("Fetching aggregated results for {}", aggregationInfo);
         return departmentService.getAggregatedValues(aggregationInfo, pageable);
     }
 
-    @RequestMapping(value="/{id:.+}/employees", method=RequestMethod.GET)
+    @RequestMapping(value="/{deptId:.+}/employees", method=RequestMethod.GET)
     @ApiOperation(value = "Gets the employees instance associated with the given id.")
     @WMAccessVisibility(value = AccessSpecifier.APP_ONLY)
-    public Page<Employee> findAssociatedEmployees(@PathVariable("id") Integer id, Pageable pageable) {
+    public Page<Employee> findAssociatedEmployees(@PathVariable("deptId") Integer deptId, Pageable pageable) {
 
         LOGGER.debug("Fetching all associated employees");
-        return departmentService.findAssociatedEmployees(id, pageable);
+        return departmentService.findAssociatedEmployees(deptId, pageable);
     }
 
     /**

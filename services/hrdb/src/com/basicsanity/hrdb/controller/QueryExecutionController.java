@@ -21,7 +21,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.wavemaker.commons.wrapper.StringWrapper;
 import com.wavemaker.runtime.data.export.ExportOptions;
 import com.wavemaker.runtime.file.manager.ExportedFileManager;
-import com.wavemaker.runtime.security.xss.XssDisable;
 import com.wavemaker.tools.api.core.annotations.WMAccessVisibility;
 import com.wavemaker.tools.api.core.models.AccessSpecifier;
 import com.wordnik.swagger.annotations.Api;
@@ -57,7 +56,6 @@ public class QueryExecutionController {
     @ApiOperation(value = "Returns downloadable file url for query HQL_FromVacation")
     @RequestMapping(value = "/queries/HQL_FromVacation/export", method = RequestMethod.POST)
     @WMAccessVisibility(value = AccessSpecifier.APP_ONLY)
-    @XssDisable
     public StringWrapper exportHQL_FromVacation(@RequestBody ExportOptions exportOptions, Pageable pageable) {
         LOGGER.debug("Exporting named query: HQL_FromVacation");
 
@@ -86,7 +84,6 @@ public class QueryExecutionController {
     @ApiOperation(value = "Returns downloadable file url for query SV_EmpData")
     @RequestMapping(value = "/queries/SV_EmpData/export", method = RequestMethod.POST)
     @WMAccessVisibility(value = AccessSpecifier.APP_ONLY)
-    @XssDisable
     public StringWrapper exportSV_EmpData(@RequestBody ExportOptions exportOptions, Pageable pageable) {
         LOGGER.debug("Exporting named query: SV_EmpData");
 
